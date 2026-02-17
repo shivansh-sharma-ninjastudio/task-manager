@@ -14,31 +14,36 @@ export const useDeleteTask = () => {
   });
   const [error, setError] = useState<string | null>(null);
 
-  const deleteTask = (id: string) => {
+  const deleteTask = async (id: string): Promise<void> => {
     if (!id) {
       setError("Task ID is required");
-      return;
+      throw new Error("Task ID is required");
     }
 
-    try {
-      setLoading({ isDeleting: true, id });
+    setLoading({ isDeleting: true, id });
 
+    try {
       const tasks: TaskDB | null = getFromStorage(STORAGE_KEY);
 
       if (!tasks) {
         setError("Local storage is empty!");
         setLoading({ isDeleting: false, id: null });
-        return;
+        throw new Error("Local storage is empty");
       }
 
-      runAfterDelay(() => {
-        const filteredTasks = tasks.filter((task) => task.id !== id);
-        setToStorage(STORAGE_KEY, filteredTasks);
-        setLoading({ isDeleting: false, id: null });
-      }, 500);
-    } catch {
+      await new Promise<void>((resolve) => {
+        runAfterDelay(() => {
+          resolve();
+        }, 500);
+      });
+
+      const filteredTasks = tasks.filter((task) => task.id !== id);
+      setToStorage(STORAGE_KEY, filteredTasks);
+      setLoading({ isDeleting: false, id: null });
+    } catch (err) {
       setError("Error deleting task");
       setLoading({ isDeleting: false, id: null });
+      throw err;
     }
   };
 

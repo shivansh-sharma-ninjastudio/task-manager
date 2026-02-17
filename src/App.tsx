@@ -2,6 +2,7 @@ import { ModeToggle } from "./components/mode-toggle";
 import { Button } from "./components/ui/button";
 import { useGetAllTasks } from "./hooks/tasks/useGetAllTasks";
 import { useDeleteTask } from "./hooks/tasks/useDeleteTask";
+import { AddTask } from "./components/AddTask";
 import { useEffect, useState } from "react";
 import type { TaskDB } from "./types";
 
@@ -17,14 +18,21 @@ function App() {
     }
   }, [tasksFromDb]);
 
-  const handleDelete = (id: string) => {
-    deleteTask(id);
-    setTasks(tasks.filter((task) => task.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteTask(id);
+      setTasks(tasks.filter((task) => task.id !== id));
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+    }
   };
 
   return (
-    <div className="flex h-screen w-full items-center justify-center flex-col gap-2">
+    <div className="flex w-full items-center justify-center flex-col gap-2 p-10 min-h-screen">
       <ModeToggle />
+      <AddTask
+        onTaskAdded={(newTask) => setTasks((prev) => [...prev, newTask])}
+      />
       {error && <p>Error: {error}</p>}
       {loading && <p>Loading...</p>}
       <div className="flex flex-col gap-2">
@@ -42,6 +50,7 @@ function App() {
                 variant={"destructive"}
                 onClick={() => handleDelete(task.id)}
                 className="cursor-pointer"
+                disabled={deleteLoading.isDeleting}
               >
                 {deleteLoading.isDeleting && deleteLoading.id === task.id
                   ? "Deleting..."
