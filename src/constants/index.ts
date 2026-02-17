@@ -1,5 +1,7 @@
 import { type TaskDB } from "@/types";
 
+export const STORAGE_KEY = "task_db";
+
 export const DEMO_DB: TaskDB = [
   {
     id: "1",
