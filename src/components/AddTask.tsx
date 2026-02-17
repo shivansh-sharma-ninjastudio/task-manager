@@ -57,7 +57,7 @@ export function AddTask({ onTaskAdded }: AddTaskProps) {
   };
 
   return (
-    <div className="w-full max-w-md border rounded-lg p-6 space-y-4">
+    <div className="w-full rounded-lg p-6 space-y-4">
       <h2 className="text-xl font-semibold">Add New Task</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
