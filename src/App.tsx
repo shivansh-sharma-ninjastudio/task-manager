@@ -4,13 +4,15 @@ import { useGetAllTasks } from "./hooks/tasks/useGetAllTasks";
 import { useDeleteTask } from "./hooks/tasks/useDeleteTask";
 import { AddTask } from "./components/AddTask";
 import { useEffect, useState } from "react";
+import { Dialog, DialogContent, DialogTrigger } from "./components/ui/dialog";
 import type { TaskDB } from "./types";
 
 function App() {
-  const [tasks, setTasks] = useState<TaskDB>([]);
-
   const { tasks: tasksFromDb, loading, error } = useGetAllTasks();
   const { deleteTask, loading: deleteLoading } = useDeleteTask();
+
+  const [tasks, setTasks] = useState<TaskDB>([]);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (tasksFromDb) {
@@ -30,9 +32,20 @@ function App() {
   return (
     <div className="flex w-full items-center justify-center flex-col gap-2 p-10 min-h-screen">
       <ModeToggle />
-      <AddTask
-        onTaskAdded={(newTask) => setTasks((prev) => [...prev, newTask])}
-      />
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger>
+          <Button>Add Task</Button>
+        </DialogTrigger>
+        <DialogContent>
+          <AddTask
+            onTaskAdded={(newTask) => {
+              setTasks((prev) => [...prev, newTask]);
+              setOpen(false);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
       {error && <p>Error: {error}</p>}
       {loading && <p>Loading...</p>}
       <div className="flex flex-col gap-2">
