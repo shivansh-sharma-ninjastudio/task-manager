@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import type { TaskDB } from "@/types";
 import { getFromStorage, setToStorage } from "@/lib/localstorage";
-import { DEMO_DB } from "@/constants";
+import { DEMO_DB, STORAGE_KEY } from "@/constants";
 import { runAfterDelay } from "@/lib/delay";
-
-const STORAGE_KEY = "tasks_db";
 
 export const useGetAllTasks = () => {
   const [tasks, setTasks] = useState<TaskDB>([]);

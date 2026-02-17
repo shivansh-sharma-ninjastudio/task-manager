@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import type { Task, TaskDB } from "@/types";
 import { getFromStorage } from "@/lib/localstorage";
 import { runAfterDelay } from "@/lib/delay";
-
-const STORAGE_KEY = "tasks_db";
+import { STORAGE_KEY } from "@/constants";
 
 export const useGetTask = ({ id }: { id: string }) => {
   const [taskDetails, setTaskDetails] = useState<Task | null>(null);
@@ -11,6 +10,11 @@ export const useGetTask = ({ id }: { id: string }) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!id) {
+      setError("Task ID is required");
+      return;
+    }
+
     try {
       setLoading(true);
 
