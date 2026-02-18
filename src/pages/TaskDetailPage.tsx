@@ -15,7 +15,7 @@ export default function () {
 
   return (
     <div className="w-full">
-      <div className="p-10 maflex flex-col gap-2 mx-auto max-w-[1000px]">
+      <div className="p-4 md:p-10 maflex flex-col gap-2 mx-auto max-w-[1000px]">
         <a href="/">
           <Button className="ml-2 mb-4 cursor-pointer" variant={"outline"}>
             <ArrowLeft /> Back

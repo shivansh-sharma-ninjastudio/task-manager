@@ -37,7 +37,7 @@ export function Task({
   isDeleting?: boolean;
 }) {
   return (
-    <Card className="w-full min-w-md">
+    <Card className="w-full min-w-[200px] max-w-[300px]">
       <a href={`/task/${id}`}>
         <CardHeader>
           <div className="flex flex-row items-center justify-between space-y-0 pb-2">

@@ -1,4 +1,3 @@
-import { ModeToggle } from "./components/mode-toggle";
 import { Button } from "./components/ui/button";
 import { useGetAllTasks } from "./hooks/tasks/useGetAllTasks";
 import { useDeleteTask } from "./hooks/tasks/useDeleteTask";
@@ -7,6 +6,7 @@ import { Task } from "./components/Task";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "./components/ui/dialog";
 import type { TaskDB, Task as TaskType } from "./types";
+import Navigationbar from "./components/Navigationbar";
 
 function App() {
   const { tasks: tasksFromDb, loading, error } = useGetAllTasks();
@@ -49,36 +49,37 @@ function App() {
   };
 
   return (
-    <div className="flex w-full items-center justify-center flex-col gap-2 p-10 min-h-screen">
-      <ModeToggle />
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogTrigger asChild>
-          <Button className="cursor-pointer">Add Task</Button>
-        </DialogTrigger>
-        <DialogContent>
-          <AddEditTask
-            task={editingTask}
-            onTaskAdded={(newTask) => {
-              setTasks((prev) => [...prev, newTask]);
-              setOpen(false);
-            }}
-            onTaskUpdated={(updatedTask) => {
-              setTasks((prev) =>
-                prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)),
-              );
-              setOpen(false);
-            }}
-          />
-        </DialogContent>
-      </Dialog>
+    <>
+      <Navigationbar />
+      <div className="flex w-full mt-20 items-center justify-center flex-col gap-2 p-10">
+        <Dialog open={open} onOpenChange={handleOpenChange}>
+          <DialogTrigger asChild>
+            <Button className="cursor-pointer">Add Task</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <AddEditTask
+              task={editingTask}
+              onTaskAdded={(newTask) => {
+                setTasks((prev) => [...prev, newTask]);
+                setOpen(false);
+              }}
+              onTaskUpdated={(updatedTask) => {
+                setTasks((prev) =>
+                  prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)),
+                );
+                setOpen(false);
+              }}
+            />
+          </DialogContent>
+        </Dialog>
 
-      {error && <p>Error: {error}</p>}
-      {loading && <p>Loading...</p>}
-      <div className="flex flex-col gap-2">
-        {tasks &&
-          tasks.map((task) => (
-            <div key={task.id} className="flex gap-2 items-start w-full">
+        {error && <p>Error: {error}</p>}
+        {loading && <p>Loading...</p>}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-[1200px] mx-auto justify-items-center">
+          {tasks &&
+            tasks.map((task) => (
               <Task
+                key={task.id}
                 id={task.id}
                 title={task.title}
                 description={task.description}
@@ -92,10 +93,10 @@ function App() {
                   deleteLoading.isDeleting && deleteLoading.id === task.id
                 }
               />
-            </div>
-          ))}
+            ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
