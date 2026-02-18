@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAddTask } from "@/hooks/tasks/useAddTask";
+import { useEditTask } from "@/hooks/tasks/useEditTask";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,35 +23,80 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import type { Task, TaskPriority } from "@/types";
 
-interface AddTaskProps {
-  onTaskAdded: (task: Task) => void;
+interface AddEditTaskProps {
+  task?: Task;
+  onTaskAdded?: (task: Task) => void;
+  onTaskUpdated?: (task: Task) => void;
 }
 
-export function AddTask({ onTaskAdded }: AddTaskProps) {
-  const { addTask, loading, error } = useAddTask();
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState<TaskPriority>("Low");
-  const [date, setDate] = useState<Date>();
+export function AddEditTask({
+  task,
+  onTaskAdded,
+  onTaskUpdated,
+}: AddEditTaskProps) {
+  const isEditMode = !!task;
+  const { addTask, loading: addLoading, error: addError } = useAddTask();
+  const { editTask, loading: editLoading, error: editError } = useEditTask();
+
+  const loading = addLoading || editLoading;
+  const error = addError || editError;
+
+  const [title, setTitle] = useState(task?.title || "");
+  const [description, setDescription] = useState(task?.description || "");
+  const [priority, setPriority] = useState<TaskPriority>(
+    task?.priority || "Low",
+  );
+  const [date, setDate] = useState<Date | undefined>(
+    task?.dueDate ? new Date(task.dueDate) : undefined,
+  );
+
+  useEffect(() => {
+    if (task) {
+      setTitle(task.title);
+      setDescription(task.description || "");
+      setPriority(task.priority);
+      setDate(task.dueDate ? new Date(task.dueDate) : undefined);
+    } else {
+      setTitle("");
+      setDescription("");
+      setPriority("Low");
+      setDate(undefined);
+    }
+  }, [task]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !date) return;
 
     try {
-      const newTask = await addTask({
-        title,
-        description,
-        priority,
-        dueDate: date.toISOString(),
-      });
-      onTaskAdded(newTask);
+      if (isEditMode && task) {
+        const updatedTask = await editTask({
+          id: task.id,
+          updates: {
+            title,
+            description,
+            priority,
+            dueDate: date.toISOString(),
+            status: task.status,
+          },
+        });
+        onTaskUpdated?.(updatedTask);
+      } else {
+        const newTask = await addTask({
+          title,
+          description,
+          priority,
+          dueDate: date.toISOString(),
+        });
+        onTaskAdded?.(newTask);
+      }
 
-      // Reset form
-      setTitle("");
-      setDescription("");
-      setPriority("Low");
-      setDate(undefined);
+      if (!isEditMode) {
+        setTitle("");
+        setDescription("");
+        setPriority("Low");
+        setDate(undefined);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -58,7 +104,9 @@ export function AddTask({ onTaskAdded }: AddTaskProps) {
 
   return (
     <div className="w-full rounded-lg p-6 space-y-4">
-      <h2 className="text-xl font-semibold">Add New Task</h2>
+      <h2 className="text-xl font-semibold">
+        {isEditMode ? "Edit Task" : "Add New Task"}
+      </h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="title">Title</Label>
@@ -122,7 +170,13 @@ export function AddTask({ onTaskAdded }: AddTaskProps) {
         {error && <p className="text-sm text-destructive">{error}</p>}
 
         <Button type="submit" disabled={loading} className="w-full">
-          {loading ? "Adding..." : "Add Task"}
+          {loading
+            ? isEditMode
+              ? "Saving..."
+              : "Adding..."
+            : isEditMode
+              ? "Save Changes"
+              : "Add Task"}
         </Button>
       </form>
     </div>

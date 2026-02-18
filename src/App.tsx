@@ -2,11 +2,11 @@ import { ModeToggle } from "./components/mode-toggle";
 import { Button } from "./components/ui/button";
 import { useGetAllTasks } from "./hooks/tasks/useGetAllTasks";
 import { useDeleteTask } from "./hooks/tasks/useDeleteTask";
-import { AddTask } from "./components/AddTask";
+import { AddEditTask } from "./components/AddEditTask";
 import { Task } from "./components/Task";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "./components/ui/dialog";
-import type { TaskDB } from "./types";
+import type { TaskDB, Task as TaskType } from "./types";
 
 function App() {
   const { tasks: tasksFromDb, loading, error } = useGetAllTasks();
@@ -14,6 +14,9 @@ function App() {
 
   const [tasks, setTasks] = useState<TaskDB>([]);
   const [open, setOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<TaskType | undefined>(
+    undefined,
+  );
 
   useEffect(() => {
     if (tasksFromDb) {
@@ -30,21 +33,39 @@ function App() {
     }
   };
 
-  const handleEdit = () => {
-    console.log("Edit clicked");
+  const handleEdit = (id: string) => {
+    const taskToEdit = tasks.find((t) => t.id === id);
+    if (taskToEdit) {
+      setEditingTask(taskToEdit);
+      setOpen(true);
+    }
+  };
+
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      setEditingTask(undefined);
+    }
   };
 
   return (
     <div className="flex w-full items-center justify-center flex-col gap-2 p-10 min-h-screen">
       <ModeToggle />
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogTrigger asChild>
           <Button className="cursor-pointer">Add Task</Button>
         </DialogTrigger>
         <DialogContent>
-          <AddTask
+          <AddEditTask
+            task={editingTask}
             onTaskAdded={(newTask) => {
               setTasks((prev) => [...prev, newTask]);
+              setOpen(false);
+            }}
+            onTaskUpdated={(updatedTask) => {
+              setTasks((prev) =>
+                prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)),
+              );
               setOpen(false);
             }}
           />
