@@ -104,9 +104,9 @@ function App() {
   };
 
   return (
-    <>
+    <div>
       <Navigationbar />
-      <div className="flex w-full max-w-[1200px] mt-20 items-center justify-center flex-col gap-2 p-4 md:p-10">
+      <div className="flex w-full max-w-[1200px] mt-20 items-center justify-center flex-col gap-2 p-4 md:p-10 mx-auto">
         <ControlPanel
           filters={filters}
           sortConfig={sortConfig}
@@ -153,10 +153,18 @@ function App() {
               />
             ))}
         </div>
+        {filteredTasks.length === 0 && !loading && (
+          <Card className="w-full max-w-[1200px] mx-auto justify-items-center">
+            <p className="text-center">No tasks found</p>
+          </Card>
+        )}
+        {error && (
+          <Card className="w-full max-w-[1200px] mx-auto justify-items-center">
+            <p className="text-center">Error: {error}</p>
+          </Card>
+        )}
       </div>
-      {filteredTasks.length === 0 && !loading && <p>No tasks found</p>}
-      {error && <p>Error: {error}</p>}
-    </>
+    </div>
   );
 }
 
