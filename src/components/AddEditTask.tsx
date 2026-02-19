@@ -21,7 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
-import type { Task, TaskPriority } from "@/types";
+import type { Task, TaskPriority, TaskStatus } from "@/types";
 
 interface AddEditTaskProps {
   task?: Task;
@@ -46,6 +46,7 @@ export function AddEditTask({
   const [priority, setPriority] = useState<TaskPriority>(
     task?.priority || "Low",
   );
+  const [status, setStatus] = useState<TaskStatus>(task?.status || "To Do");
   const [date, setDate] = useState<Date | undefined>(
     task?.dueDate ? new Date(task.dueDate) : undefined,
   );
@@ -55,6 +56,7 @@ export function AddEditTask({
       setTitle(task.title);
       setDescription(task.description || "");
       setPriority(task.priority);
+      setStatus(task.status);
       setDate(task.dueDate ? new Date(task.dueDate) : undefined);
     } else {
       setTitle("");
@@ -77,7 +79,7 @@ export function AddEditTask({
             description,
             priority,
             dueDate: date.toISOString(),
-            status: task.status,
+            status: status,
           },
         });
         onTaskUpdated?.(updatedTask);
@@ -146,6 +148,25 @@ export function AddEditTask({
             </SelectContent>
           </Select>
         </div>
+
+        {isEditMode && (
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+            <Select
+              value={status}
+              onValueChange={(val: TaskStatus) => setStatus(val)}
+            >
+              <SelectTrigger id="status">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="To Do">To Do</SelectItem>
+                <SelectItem value="In Progress">In Progress</SelectItem>
+                <SelectItem value="Done">Done</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         <div className="space-y-2 flex flex-col">
           <Label htmlFor="dueDate">Due Date</Label>
