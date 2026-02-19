@@ -1,12 +1,18 @@
-import { ModeToggle } from "./components/mode-toggle";
-import { Button } from "./components/ui/button";
 import { useGetAllTasks } from "./hooks/tasks/useGetAllTasks";
 import { useDeleteTask } from "./hooks/tasks/useDeleteTask";
-import { AddEditTask } from "./components/AddEditTask";
 import { Task } from "./components/Task";
-import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogTrigger } from "./components/ui/dialog";
-import type { TaskDB, Task as TaskType } from "./types";
+import { ControlPanel } from "./components/ControlPanel";
+import { useEffect, useState, useMemo } from "react";
+import type {
+  TaskDB,
+  Task as TaskType,
+  TaskFilters,
+  TaskSortConfig,
+} from "./types";
+import Navigationbar from "./components/Navigationbar";
+import { Card } from "./components/ui/card";
+
+const PRIORITY_ORDER = { Low: 0, Medium: 1, High: 2 };
 
 function App() {
   const { tasks: tasksFromDb, loading, error } = useGetAllTasks();
@@ -17,12 +23,55 @@ function App() {
   const [editingTask, setEditingTask] = useState<TaskType | undefined>(
     undefined,
   );
+  const [filters, setFilters] = useState<TaskFilters>({});
+  const [sortConfig, setSortConfig] = useState<TaskSortConfig>({
+    field: "createdAt",
+    order: "desc",
+  });
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (tasksFromDb) {
       setTasks(tasksFromDb);
     }
   }, [tasksFromDb]);
+
+  const filteredTasks = useMemo(() => {
+    let result = [...tasks];
+
+    if (filters.priority) {
+      result = result.filter((task) => task.priority === filters.priority);
+    }
+
+    if (filters.status) {
+      result = result.filter((task) => task.status === filters.status);
+    }
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (t) =>
+          t.title.toLowerCase().includes(q) ||
+          (t.description && t.description.toLowerCase().includes(q)),
+      );
+    }
+
+    result.sort((a, b) => {
+      let comparison = 0;
+
+      if (sortConfig.field === "priority") {
+        comparison = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+      } else {
+        comparison =
+          new Date(a[sortConfig.field]).getTime() -
+          new Date(b[sortConfig.field]).getTime();
+      }
+
+      return sortConfig.order === "asc" ? comparison : -comparison;
+    });
+
+    return result;
+  }, [tasks, filters, sortConfig, searchQuery]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -48,37 +97,47 @@ function App() {
     }
   };
 
-  return (
-    <div className="flex w-full items-center justify-center flex-col gap-2 p-10 min-h-screen">
-      <ModeToggle />
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogTrigger asChild>
-          <Button className="cursor-pointer">Add Task</Button>
-        </DialogTrigger>
-        <DialogContent>
-          <AddEditTask
-            task={editingTask}
-            onTaskAdded={(newTask) => {
-              setTasks((prev) => [...prev, newTask]);
-              setOpen(false);
-            }}
-            onTaskUpdated={(updatedTask) => {
-              setTasks((prev) =>
-                prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)),
-              );
-              setOpen(false);
-            }}
-          />
-        </DialogContent>
-      </Dialog>
+  const handleClearFilters = () => {
+    setFilters({});
+    setSortConfig({ field: "createdAt", order: "desc" });
+    setSearchQuery("");
+  };
 
-      {error && <p>Error: {error}</p>}
-      {loading && <p>Loading...</p>}
-      <div className="flex flex-col gap-2">
-        {tasks &&
-          tasks.map((task) => (
-            <div key={task.id} className="flex gap-2 items-start w-full">
+  return (
+    <>
+      <Navigationbar />
+      <div className="flex w-full max-w-[1200px] mt-20 items-center justify-center flex-col gap-2 p-4 md:p-10">
+        <ControlPanel
+          filters={filters}
+          sortConfig={sortConfig}
+          onFiltersChange={setFilters}
+          onSortChange={setSortConfig}
+          onSearchChange={setSearchQuery}
+          open={open}
+          onOpenChange={handleOpenChange}
+          editingTask={editingTask}
+          onClearFilters={handleClearFilters}
+          onTaskAdded={(newTask) => {
+            setTasks((prev) => [...prev, newTask]);
+            setOpen(false);
+          }}
+          onTaskUpdated={(updatedTask) => {
+            setTasks((prev) =>
+              prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)),
+            );
+            setOpen(false);
+          }}
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-[1200px] mx-auto justify-items-center">
+          {loading &&
+            [0, 1, 2].map((i) => (
+              <Card key={i} className="h-[200px] w-full"></Card>
+            ))}
+
+          {filteredTasks &&
+            filteredTasks.map((task) => (
               <Task
+                key={task.id}
                 id={task.id}
                 title={task.title}
                 description={task.description}
@@ -92,10 +151,12 @@ function App() {
                   deleteLoading.isDeleting && deleteLoading.id === task.id
                 }
               />
-            </div>
-          ))}
+            ))}
+        </div>
       </div>
-    </div>
+      {filteredTasks.length === 0 && !loading && <p>No tasks found</p>}
+      {error && <p>Error: {error}</p>}
+    </>
   );
 }
 
