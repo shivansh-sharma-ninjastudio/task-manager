@@ -11,6 +11,7 @@ import type {
 } from "./types";
 import { Card } from "./components/ui/card";
 import Stats from "./components/Stats";
+import { toast } from "sonner";
 
 const PRIORITY_ORDER = { Low: 0, Medium: 1, High: 2 };
 
@@ -77,6 +78,7 @@ function App() {
     try {
       await deleteTask(id);
       setTasks(tasks.filter((task) => task.id !== id));
+      toast("Task deleted succesfully");
     } catch (error) {
       console.error("Failed to delete task:", error);
     }

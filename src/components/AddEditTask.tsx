@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import type { Task, TaskPriority, TaskStatus } from "@/types";
+import { toast } from "sonner";
 
 interface AddEditTaskProps {
   task?: Task;
@@ -83,6 +84,7 @@ export function AddEditTask({
           },
         });
         onTaskUpdated?.(updatedTask);
+        toast("Task edited successfully");
       } else {
         const newTask = await addTask({
           title,
@@ -91,6 +93,7 @@ export function AddEditTask({
           dueDate: date.toISOString(),
         });
         onTaskAdded?.(newTask);
+        toast("Task addedd successfully");
       }
 
       if (!isEditMode) {
