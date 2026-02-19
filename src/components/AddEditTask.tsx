@@ -116,6 +116,7 @@ export function AddEditTask({
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter task title"
             required
+            maxLength={50}
           />
         </div>
 
