@@ -21,7 +21,7 @@ import type {
   SortField,
 } from "../types";
 import { Badge } from "./ui/badge";
-import { Check } from "lucide-react";
+import { Check, MoveDown, MoveUp } from "lucide-react";
 
 interface ControlPanelProps {
   filters: TaskFilters;
@@ -146,10 +146,12 @@ export function ControlPanel({
           <DropdownMenuTrigger asChild>
             <Button variant="outline">
               Sort by
-              {sortConfig.field === "createdAt" && "Date Created"}
-              {sortConfig.field === "dueDate" && "Due Date"}
-              {sortConfig.field === "priority" && "Priority"}
-              {sortConfig.order === "asc" ? "☝🏻" : "👇🏻"}
+              <span className="flex items-center gap-2">
+                {sortConfig.field === "createdAt" && "Date Created"}
+                {sortConfig.field === "dueDate" && "Due Date"}
+                {sortConfig.field === "priority" && "Priority"}
+                {sortConfig.order === "asc" ? <MoveUp /> : <MoveDown />}
+              </span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
@@ -160,7 +162,7 @@ export function ControlPanel({
               >
                 {sf.label}{" "}
                 {sortConfig.field === sf.value &&
-                  (sortConfig.order === "asc" ? "☝🏻" : "👇🏻")}
+                  (sortConfig.order === "asc" ? <MoveUp /> : <MoveDown />)}
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>

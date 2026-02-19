@@ -8,7 +8,7 @@ export const useAddTask = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const addTask = async (payload: CreateTaskPayload): Promise<Task> => {
+  const addTask = async (payload: CreateTaskPayload | Task): Promise<Task> => {
     setLoading(true);
     setError(null);
 
@@ -19,15 +19,18 @@ export const useAddTask = () => {
 
       const existingTasks: TaskDB = getFromStorage(STORAGE_KEY) || [];
 
-      const newTask: Task = {
-        id: crypto.randomUUID(),
-        title: payload.title,
-        description: payload.description,
-        priority: payload.priority,
-        status: "To Do",
-        createdAt: new Date().toISOString(),
-        dueDate: payload.dueDate,
-      };
+      const newTask: Task =
+        "id" in payload
+          ? (payload as Task)
+          : {
+              id: crypto.randomUUID(),
+              title: payload.title,
+              description: payload.description,
+              priority: payload.priority,
+              status: "To Do",
+              createdAt: new Date().toISOString(),
+              dueDate: payload.dueDate,
+            };
 
       const updatedTasks = [...existingTasks, newTask];
       setToStorage(STORAGE_KEY, updatedTasks);

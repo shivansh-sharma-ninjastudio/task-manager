@@ -9,14 +9,16 @@ import type {
   TaskFilters,
   TaskSortConfig,
 } from "./types";
-import Navigationbar from "./components/Navigationbar";
 import { Card } from "./components/ui/card";
-
+import Stats from "./components/Stats";
+import { toast } from "sonner";
+import { useAddTask } from "./hooks/tasks/useAddTask";
 const PRIORITY_ORDER = { Low: 0, Medium: 1, High: 2 };
 
 function App() {
   const { tasks: tasksFromDb, loading, error } = useGetAllTasks();
   const { deleteTask, loading: deleteLoading } = useDeleteTask();
+  const { addTask } = useAddTask();
 
   const [tasks, setTasks] = useState<TaskDB>([]);
   const [open, setOpen] = useState(false);
@@ -75,12 +77,28 @@ function App() {
 
   const handleDelete = async (id: string) => {
     try {
+      const taskToDelete = tasks.find((task) => task.id === id);
+      if (!taskToDelete) return;
+
       await deleteTask(id);
       setTasks(tasks.filter((task) => task.id !== id));
+      toast("Task deleted successfully", {
+        action: {
+          label: "Undo",
+          onClick: () => handleUndoDelete(taskToDelete),
+        },
+      });
     } catch (error) {
       console.error("Failed to delete task:", error);
     }
   };
+
+  async function handleUndoDelete(taskToRestore: TaskType) {
+    if (taskToRestore) {
+      await addTask(taskToRestore);
+      setTasks((prev) => [...prev, taskToRestore]);
+    }
+  }
 
   const handleEdit = (id: string) => {
     const taskToEdit = tasks.find((t) => t.id === id);
@@ -104,9 +122,9 @@ function App() {
   };
 
   return (
-    <>
-      <Navigationbar />
-      <div className="flex w-full max-w-[1200px] mt-20 items-center justify-center flex-col gap-2 p-4 md:p-10">
+    <div>
+      <div className="flex w-full max-w-[1200px] mt-20 items-center justify-center flex-col gap-2 p-4 md:p-10 mx-auto">
+        <Stats tasks={tasks} />
         <ControlPanel
           filters={filters}
           sortConfig={sortConfig}
@@ -120,6 +138,7 @@ function App() {
           onTaskAdded={(newTask) => {
             setTasks((prev) => [...prev, newTask]);
             setOpen(false);
+            toast("Task added successfully");
           }}
           onTaskUpdated={(updatedTask) => {
             setTasks((prev) =>
@@ -128,7 +147,7 @@ function App() {
             setOpen(false);
           }}
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-[1200px] mx-auto justify-items-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full mx-auto justify-items-center">
           {loading &&
             [0, 1, 2].map((i) => (
               <Card key={i} className="h-[200px] w-full"></Card>
@@ -153,10 +172,18 @@ function App() {
               />
             ))}
         </div>
+        {filteredTasks.length === 0 && !loading && (
+          <Card className="w-full max-w-[1200px] mx-auto justify-items-center">
+            <p className="text-center">No tasks found</p>
+          </Card>
+        )}
+        {error && (
+          <Card className="w-full max-w-[1200px] mx-auto justify-items-center">
+            <p className="text-center">Error: {error}</p>
+          </Card>
+        )}
       </div>
-      {filteredTasks.length === 0 && !loading && <p>No tasks found</p>}
-      {error && <p>Error: {error}</p>}
-    </>
+    </div>
   );
 }
 

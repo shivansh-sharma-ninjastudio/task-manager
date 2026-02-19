@@ -1,3 +1,4 @@
+import DueDateView from "@/components/DueDateView";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,7 +15,7 @@ export default function () {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full mt-20">
       <div className="p-4 md:p-10 maflex flex-col gap-2 mx-auto max-w-[1000px]">
         <a href="/">
           <Button className="ml-2 mb-4 cursor-pointer" variant={"outline"}>
@@ -43,6 +44,16 @@ export default function () {
                 ) : (
                   <Badge variant="secondary">
                     {new Date(taskDetails?.createdAt || "").toDateString()}
+                  </Badge>
+                )}
+              </div>
+              <div className="flex gap-2 items-center">
+                <p>Due Date :</p>
+                {loading ? (
+                  "....."
+                ) : (
+                  <Badge variant="secondary">
+                    <DueDateView date={taskDetails?.dueDate || ""} />
                   </Badge>
                 )}
               </div>

@@ -9,6 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { TaskPriority, TaskStatus } from "@/types";
+import DueDateView from "./DueDateView";
 
 interface TaskProps {
   id: string;
@@ -37,11 +38,11 @@ export function Task({
   isDeleting?: boolean;
 }) {
   return (
-    <Card className="w-full min-w-[200px] max-w-[300px]">
+    <Card className="w-full min-w-[200px]">
       <a href={`/task/${id}`}>
         <CardHeader>
           <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{title}</CardTitle>
+            <CardTitle className="text-lg font-medium">{title}</CardTitle>
             <Badge variant={priority}>{priority}</Badge>
           </div>
           <CardDescription className="line-clamp-2">
@@ -57,7 +58,12 @@ export function Task({
       <CardFooter className="flex flex-col gap-4 items-start text-xs text-muted-foreground">
         <div className="flex flex-col gap-1">
           <span>Created: {new Date(createdAt).toLocaleDateString()}</span>
-          <span>Due: {new Date(dueDate).toLocaleDateString()}</span>
+          <span>
+            Due:{" "}
+            <Badge variant="secondary">
+              <DueDateView date={dueDate} />
+            </Badge>
+          </span>
         </div>
         <div className="flex gap-2">
           <Button
