@@ -105,7 +105,6 @@ function App() {
 
   return (
     <div>
-      <Navigationbar />
       <div className="flex w-full max-w-[1200px] mt-20 items-center justify-center flex-col gap-2 p-4 md:p-10 mx-auto">
         <ControlPanel
           filters={filters}
