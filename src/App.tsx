@@ -12,12 +12,13 @@ import type {
 import { Card } from "./components/ui/card";
 import Stats from "./components/Stats";
 import { toast } from "sonner";
-
+import { useAddTask } from "./hooks/tasks/useAddTask";
 const PRIORITY_ORDER = { Low: 0, Medium: 1, High: 2 };
 
 function App() {
   const { tasks: tasksFromDb, loading, error } = useGetAllTasks();
   const { deleteTask, loading: deleteLoading } = useDeleteTask();
+  const { addTask } = useAddTask();
 
   const [tasks, setTasks] = useState<TaskDB>([]);
   const [open, setOpen] = useState(false);
@@ -76,13 +77,28 @@ function App() {
 
   const handleDelete = async (id: string) => {
     try {
+      const taskToDelete = tasks.find((task) => task.id === id);
+      if (!taskToDelete) return;
+
       await deleteTask(id);
       setTasks(tasks.filter((task) => task.id !== id));
-      toast("Task deleted succesfully");
+      toast("Task deleted successfully", {
+        action: {
+          label: "Undo",
+          onClick: () => handleUndoDelete(taskToDelete),
+        },
+      });
     } catch (error) {
       console.error("Failed to delete task:", error);
     }
   };
+
+  async function handleUndoDelete(taskToRestore: TaskType) {
+    if (taskToRestore) {
+      await addTask(taskToRestore);
+      setTasks((prev) => [...prev, taskToRestore]);
+    }
+  }
 
   const handleEdit = (id: string) => {
     const taskToEdit = tasks.find((t) => t.id === id);
@@ -122,6 +138,7 @@ function App() {
           onTaskAdded={(newTask) => {
             setTasks((prev) => [...prev, newTask]);
             setOpen(false);
+            toast("Task added successfully");
           }}
           onTaskUpdated={(updatedTask) => {
             setTasks((prev) =>
