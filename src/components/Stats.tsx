@@ -2,6 +2,7 @@ import { Card } from "./ui/card";
 import type { Task } from "../types";
 
 import { isTaskOverdue } from "../lib/utils";
+import { CountingNumber } from "./animate-ui/primitives/texts/counting-number";
 
 const Stats = ({ tasks }: { tasks: Task[] }) => {
   const completedTasks = tasks.filter((task) => task.status === "Done").length;
@@ -26,7 +27,9 @@ const Stat = ({ title, value }: { title: string; value: number }) => {
   return (
     <Card className="h-30 flex flex-col justify-between p-4">
       <p className="text-sm text-muted-foreground">{title}</p>
-      <p className="text-5xl font-bold ml-auto">{value}</p>
+      <p className="text-5xl font-bold ml-auto">
+        <CountingNumber number={value} />
+      </p>
     </Card>
   );
 };
