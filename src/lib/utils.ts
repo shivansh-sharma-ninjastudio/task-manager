@@ -15,3 +15,9 @@ export function isDateTommorrow(date: Date): boolean {
   tomorrow.setDate(tomorrow.getDate() + 1);
   return date.getDate() === tomorrow.getDate();
 }
+
+export function isTaskOverdue(date: string) {
+  const taskDate = new Date(date);
+  const today = new Date();
+  return taskDate < today;
+}

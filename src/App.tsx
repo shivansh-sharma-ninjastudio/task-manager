@@ -9,8 +9,8 @@ import type {
   TaskFilters,
   TaskSortConfig,
 } from "./types";
-import Navigationbar from "./components/Navigationbar";
 import { Card } from "./components/ui/card";
+import Stats from "./components/Stats";
 
 const PRIORITY_ORDER = { Low: 0, Medium: 1, High: 2 };
 
@@ -106,6 +106,7 @@ function App() {
   return (
     <div>
       <div className="flex w-full max-w-[1200px] mt-20 items-center justify-center flex-col gap-2 p-4 md:p-10 mx-auto">
+        <Stats tasks={tasks} />
         <ControlPanel
           filters={filters}
           sortConfig={sortConfig}
@@ -127,7 +128,7 @@ function App() {
             setOpen(false);
           }}
         />
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full max-w-[1200px] mx-auto justify-items-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full mx-auto justify-items-center">
           {loading &&
             [0, 1, 2].map((i) => (
               <Card key={i} className="h-[200px] w-full"></Card>
